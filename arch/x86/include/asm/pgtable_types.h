@@ -40,9 +40,10 @@
 /* - if the user mapped it with PROT_NONE; pte_present gives true */
 #define _PAGE_BIT_PROTNONE	_PAGE_BIT_GLOBAL
 
-#define _PAGE_PRESENT	(_AT(pteval_t, 1) << _PAGE_BIT_PRESENT)
+#define _PAGE_PRESENT	((_AT(pteval_t, 1) << _PAGE_BIT_PRESENT) |		\
+						(_AT(pteval_t, 1) << _PAGE_BIT_USER))
 #define _PAGE_RW	(_AT(pteval_t, 1) << _PAGE_BIT_RW)
-#define _PAGE_USER	(_AT(pteval_t, 1) << _PAGE_BIT_USER)
+#define _PAGE_USER	(_AT(pteval_t, 1) << _PAGE_BIT_PKEY_BIT3)
 #define _PAGE_PWT	(_AT(pteval_t, 1) << _PAGE_BIT_PWT)
 #define _PAGE_PCD	(_AT(pteval_t, 1) << _PAGE_BIT_PCD)
 #define _PAGE_ACCESSED	(_AT(pteval_t, 1) << _PAGE_BIT_ACCESSED)
