@@ -74,28 +74,29 @@ For 32-bit we have the following conventions - kernel is built with
 #define RBP		4*8
 #define RBX		5*8
 /* These regs are callee-clobbered. Always saved on kernel entry. */
-#define R11		6*8
-#define R10		7*8
-#define R9		8*8
-#define R8		9*8
-#define RAX		10*8
-#define RCX		11*8
-#define RDX		12*8
-#define RSI		13*8
-#define RDI		14*8
+#define PKRU 	6*8
+#define R11 	7*8
+#define R10		8*8
+#define R9		9*8
+#define R8		10*8
+#define RAX		11*8
+#define RCX		12*8
+#define RDX		13*8
+#define RSI		14*8
+#define RDI		15*8
 /*
  * On syscall entry, this is syscall#. On CPU exception, this is error code.
  * On hw interrupt, it's IRQ number:
  */
-#define ORIG_RAX	15*8
+#define ORIG_RAX	16*8
 /* Return frame for iretq */
-#define RIP		16*8
-#define CS		17*8
-#define EFLAGS		18*8
-#define RSP		19*8
-#define SS		20*8
+#define RIP		17*8
+#define CS		18*8
+#define EFLAGS		19*8
+#define RSP		20*8
+#define SS		21*8
 
-#define SIZEOF_PTREGS	21*8
+#define SIZEOF_PTREGS	22*8
 
 .macro PUSH_AND_CLEAR_REGS rdx=%rdx rax=%rax save_ret=0
 	.if \save_ret
@@ -113,6 +114,18 @@ For 32-bit we have the following conventions - kernel is built with
 	pushq   %r9		/* pt_regs->r9 */
 	pushq   %r10		/* pt_regs->r10 */
 	pushq   %r11		/* pt_regs->r11 */
+
+	movq	%rax, %r11
+	xorl	%ecx, %ecx
+	ALTERNATIVE "", "rdpkru", X86_FEATURE_OSPKE
+	pushq	%rax			/* pt_regs->pkru */
+	movl	$0x55545554, %eax
+	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+	movq	%r11, %rax
+	movq (6*8)(%rsp), %rcx
+	movq (7*8)(%rsp), %rdx
+	movq (8)(%rsp), %r11
+
 	pushq	%rbx		/* pt_regs->rbx */
 	pushq	%rbp		/* pt_regs->rbp */
 	pushq	%r12		/* pt_regs->r12 */
@@ -153,6 +166,16 @@ For 32-bit we have the following conventions - kernel is built with
 	popq %r12
 	popq %rbp
 	popq %rbx
+
+	popq %rax
+	pushq %rcx
+	pushq %rdx
+	xorl	%ecx, %ecx
+	xorl	%edx, %edx
+	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+	popq %rdx
+	popq %rcx
+
 	.if \skip_r11rcx
 	popq %rsi
 	.else

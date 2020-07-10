@@ -92,6 +92,15 @@ SYM_FUNC_START(entry_SYSENTER_compat)
 	xorl	%r10d, %r10d		/* nospec   r10 */
 	pushq   $0			/* pt_regs->r11 = 0 */
 	xorl	%r11d, %r11d		/* nospec   r11 */
+
+	movq	%rax, %r11
+	ALTERNATIVE "", "rdpkru", X86_FEATURE_OSPKE
+	pushq	%rax			/* pt_regs->pkru */
+	movl	$0x55545554, %eax
+	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+	movq	%r11, %rax
+	xorl	%r11d, %r11d
+
 	pushq   %rbx                    /* pt_regs->rbx */
 	xorl	%ebx, %ebx		/* nospec   rbx */
 	pushq   %rbp                    /* pt_regs->rbp (will be overwritten) */
@@ -234,6 +243,15 @@ SYM_INNER_LABEL(entry_SYSCALL_compat_after_hwframe, SYM_L_GLOBAL)
 	xorl	%r10d, %r10d		/* nospec   r10 */
 	pushq   $0			/* pt_regs->r11 = 0 */
 	xorl	%r11d, %r11d		/* nospec   r11 */
+
+	movq	%rax, %r11
+	ALTERNATIVE "", "rdpkru", X86_FEATURE_OSPKE
+	pushq	%rax			/* pt_regs->pkru */
+	movl	$0x55545554, %eax
+	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+	movq	%r11, %rax
+	xorl	%r11d, %r11d
+
 	pushq   %rbx                    /* pt_regs->rbx */
 	xorl	%ebx, %ebx		/* nospec   rbx */
 	pushq   %rbp                    /* pt_regs->rbp (will be overwritten) */
@@ -389,6 +407,15 @@ SYM_CODE_START(entry_INT80_compat)
 	xorl	%r10d, %r10d		/* nospec   r10 */
 	pushq   %r11			/* pt_regs->r11 */
 	xorl	%r11d, %r11d		/* nospec   r11 */
+
+	movq	%rax, %r11
+	ALTERNATIVE "", "rdpkru", X86_FEATURE_OSPKE
+	pushq	%rax			/* pt_regs->pkru */
+	movl	$0x55545554, %eax
+	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+	movq	%r11, %rax
+	xorl	%r11d, %r11d
+
 	pushq   %rbx                    /* pt_regs->rbx */
 	xorl	%ebx, %ebx		/* nospec   rbx */
 	pushq   %rbp                    /* pt_regs->rbp */

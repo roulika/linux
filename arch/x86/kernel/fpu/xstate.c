@@ -8,6 +8,10 @@
 #include <linux/cpu.h>
 #include <linux/mman.h>
 #include <linux/pkeys.h>
+
+#include <linux/ptrace.h>
+#include <linux/sched/task_stack.h>
+
 #include <linux/seq_file.h>
 #include <linux/proc_fs.h>
 
@@ -934,7 +938,8 @@ int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
 	old_pkru &= ~((PKRU_AD_BIT|PKRU_WD_BIT) << pkey_shift);
 
 	/* Write old part along with new part: */
-	write_pkru(old_pkru | new_pkru_bits);
+	current_pt_regs()->pkru = old_pkru | new_pkru_bits;
+
 
 	return 0;
 }

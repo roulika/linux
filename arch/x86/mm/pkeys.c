@@ -6,6 +6,10 @@
 #include <linux/debugfs.h>		/* debugfs_create_u32()		*/
 #include <linux/mm_types.h>             /* mm_struct, vma, etc...       */
 #include <linux/pkeys.h>                /* PKEY_*                       */
+
+#include <linux/ptrace.h>
+#include <linux/sched/task_stack.h>
+
 #include <uapi/asm-generic/mman-common.h>
 
 #include <asm/cpufeature.h>             /* boot_cpu_has, ...            */
@@ -138,7 +142,7 @@ void copy_init_pkru_to_fpregs(void)
 	 * Override the PKRU state that came from 'init_fpstate'
 	 * with the baseline from the process.
 	 */
-	write_pkru(init_pkru_value_snapshot);
+	current_pt_regs()->pkru = init_pkru_value_snapshot;
 }
 
 static ssize_t init_pkru_read_file(struct file *file, char __user *user_buf,
