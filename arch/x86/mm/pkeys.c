@@ -142,7 +142,7 @@ void copy_init_pkru_to_fpregs(void)
 	 * Override the PKRU state that came from 'init_fpstate'
 	 * with the baseline from the process.
 	 */
-	current_pt_regs()->pkru = init_pkru_value_snapshot;
+	write_pkru(init_pkru_value_snapshot);
 }
 
 static ssize_t init_pkru_read_file(struct file *file, char __user *user_buf,

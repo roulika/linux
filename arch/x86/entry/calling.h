@@ -119,8 +119,11 @@ For 32-bit we have the following conventions - kernel is built with
 	xorl	%ecx, %ecx
 	ALTERNATIVE "", "rdpkru", X86_FEATURE_OSPKE
 	pushq	%rax			/* pt_regs->pkru */
+	cmpl	$0x55545554, %eax
+	je		1f
 	movl	$0x55545554, %eax
 	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+1:
 	movq	%r11, %rax
 	movq (6*8)(%rsp), %rcx
 	movq (7*8)(%rsp), %rdx
@@ -172,7 +175,10 @@ For 32-bit we have the following conventions - kernel is built with
 	pushq %rdx
 	xorl	%ecx, %ecx
 	xorl	%edx, %edx
+	cmpl	$0x55545554, %eax
+	je 		1f
 	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+1:
 	popq %rdx
 	popq %rcx
 
