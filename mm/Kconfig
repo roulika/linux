@@ -867,4 +867,14 @@ config ARCH_HAS_HUGEPD
 config MAPPING_DIRTY_HELPERS
         bool
 
+config PKK
+	bool "Enable Protection Keys for Kernel Space"
+	default n
+	help
+	  This feature enables pku-based protection for kernel memory. When
+	  enabled, all memory is marked as user-mode and appropriate
+	  instrumentation is added after each wrpkru instruction in the kernel to
+	  vet the privilege level of the code that is attempting to execute the
+	  wrpkru instruction.
+
 endmenu

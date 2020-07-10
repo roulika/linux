@@ -115,19 +115,27 @@ For 32-bit we have the following conventions - kernel is built with
 	pushq   %r10		/* pt_regs->r10 */
 	pushq   %r11		/* pt_regs->r11 */
 
+#ifdef CONFIG_PKK
 	movq	%rax, %r11
 	xorl	%ecx, %ecx
 	ALTERNATIVE "", "rdpkru", X86_FEATURE_OSPKE
+#endif //CONFIG_PKK
 	pushq	%rax			/* pt_regs->pkru */
+#ifdef CONFIG_PKK
 	cmpl	$0x55545554, %eax
 	je		1f
 	movl	$0x55545554, %eax
 	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+	movq 	%cs, %rcx
+	testb 	$3, %cl
+	je 		1f
+	nop
 1:
 	movq	%r11, %rax
 	movq (6*8)(%rsp), %rcx
 	movq (7*8)(%rsp), %rdx
 	movq (8)(%rsp), %r11
+#endif //CONFIG_PKK
 
 	pushq	%rbx		/* pt_regs->rbx */
 	pushq	%rbp		/* pt_regs->rbp */
@@ -171,6 +179,7 @@ For 32-bit we have the following conventions - kernel is built with
 	popq %rbx
 
 	popq %rax
+#ifdef CONFIG_PKK
 	pushq %rcx
 	pushq %rdx
 	xorl	%ecx, %ecx
@@ -178,9 +187,14 @@ For 32-bit we have the following conventions - kernel is built with
 	cmpl	$0x55545554, %eax
 	je 		1f
 	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+	movq 	%cs, %rcx
+	testb 	$3, %cl
+	je 		1f
+	nop
 1:
 	popq %rdx
 	popq %rcx
+#endif //CONFIG_PKK
 
 	.if \skip_r11rcx
 	popq %rsi

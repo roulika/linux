@@ -93,16 +93,24 @@ SYM_FUNC_START(entry_SYSENTER_compat)
 	pushq   $0			/* pt_regs->r11 = 0 */
 	xorl	%r11d, %r11d		/* nospec   r11 */
 
+#ifdef CONFIG_PKK
 	movq	%rax, %r11
 	ALTERNATIVE "", "rdpkru", X86_FEATURE_OSPKE
+#endif //CONFIG_PKK
 	pushq	%rax			/* pt_regs->pkru */
+#ifdef CONFIG_PKK
 	cmpl	$0x55545554, %eax
 	je		.Lno_wrpkru1
 	movl	$0x55545554, %eax
 	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+	movq 	%cs, %rcx
+	testb 	$3, %cl
+	je		.Lno_wrpkru1
+	nop
 .Lno_wrpkru1:
 	movq	%r11, %rax
 	xorl	%r11d, %r11d
+#endif //CONFIG_PKK
 
 	pushq   %rbx                    /* pt_regs->rbx */
 	xorl	%ebx, %ebx		/* nospec   rbx */
@@ -247,16 +255,24 @@ SYM_INNER_LABEL(entry_SYSCALL_compat_after_hwframe, SYM_L_GLOBAL)
 	pushq   $0			/* pt_regs->r11 = 0 */
 	xorl	%r11d, %r11d		/* nospec   r11 */
 
+#ifdef CONFIG_PKK
 	movq	%rax, %r11
 	ALTERNATIVE "", "rdpkru", X86_FEATURE_OSPKE
+#endif //CONFIG_PKK
 	pushq	%rax			/* pt_regs->pkru */
+#ifdef CONFIG_PKK
 	cmpl	$0x55545554, %eax
 	je		.Lno_wrpkru2
 	movl	$0x55545554, %eax
 	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+	movq 	%cs, %rcx
+	testb 	$3, %cl
+	je		.Lno_wrpkru2
+	nop
 .Lno_wrpkru2:
 	movq	%r11, %rax
 	xorl	%r11d, %r11d
+#endif //CONFIG_PKK
 
 	pushq   %rbx                    /* pt_regs->rbx */
 	xorl	%ebx, %ebx		/* nospec   rbx */
@@ -414,16 +430,24 @@ SYM_CODE_START(entry_INT80_compat)
 	pushq   %r11			/* pt_regs->r11 */
 	xorl	%r11d, %r11d		/* nospec   r11 */
 
+#ifdef CONFIG_PKK
 	movq	%rax, %r11
 	ALTERNATIVE "", "rdpkru", X86_FEATURE_OSPKE
+#endif //CONFIG_PKK
 	pushq	%rax			/* pt_regs->pkru */
+#ifdef CONFIG_PKK
 	cmpl	$0x55545554, %eax
 	je		.Lno_wrpkru3
 	movl	$0x55545554, %eax
 	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+	movq 	%cs, %rcx
+	testb 	$3, %cl
+	je		.Lno_wrpkru3
+	nop
 .Lno_wrpkru3:
 	movq	%r11, %rax
 	xorl	%r11d, %r11d
+#endif //CONFIG_PKK
 
 	pushq   %rbx                    /* pt_regs->rbx */
 	xorl	%ebx, %ebx		/* nospec   rbx */

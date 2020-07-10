@@ -311,14 +311,25 @@ SYM_CODE_START_LOCAL(early_idt_handler_common)
 	pushq %r10				/* pt_regs->r10 */
 	pushq %r11				/* pt_regs->r11 */
 
+#ifdef CONFIG_PKK
 	xorl	%ecx, %ecx
 	ALTERNATIVE "", "rdpkru", X86_FEATURE_OSPKE
+#endif //CONFIG_PKK
 	pushq	%rax			/* pt_regs->pkru */
+#ifdef CONFIG_PKK
+	cmpl	$0x55545554, %eax
+	je		.Lno_wrpkru
 	movl	$0x55545554, %eax
 	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+	movq 	%cs, %rcx
+	testb 	$3, %cl
+	je		.Lno_wrpkru
+	nop
+.Lno_wrpkru:
 	movq (5*8)(%rsp), %rax
 	movq (6*8)(%rsp), %rcx
 	movq (7*8)(%rsp), %rdx
+#endif //CONFIG_PKK
 
 
 	pushq %rbx				/* pt_regs->bx */
