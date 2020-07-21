@@ -388,6 +388,9 @@ SYM_CODE_START(startup_64)
 	 * tested on every boot.
 	 */
 
+#ifdef CONFIG_PKK
+	call adjust_pku
+#endif
 	/* Make sure we have GDT with 32-bit code segment */
 	leaq	gdt64(%rip), %rax
 	addq	%rax, 2(%rax)
@@ -426,6 +429,9 @@ SYM_CODE_START(startup_64)
 	pushq	%rax
 	lretq
 trampoline_return:
+#ifdef CONFIG_PKK
+	call adjust_pku
+#endif
 	/* Restore the stack, the 32-bit trampoline uses its own stack */
 	leaq	boot_stack_end(%rbx), %rsp
 
@@ -510,6 +516,19 @@ SYM_FUNC_END_ALIAS(efi_stub_entry)
 	.text
 SYM_FUNC_START_LOCAL_NOALIGN(.Lrelocated)
 
+#ifdef CONFIG_PKK
+	pushq	%rax
+	pushq	%rcx
+	pushq	%rdx
+	xorq	%rax, %rax
+	xorq	%rdx, %rdx
+	xorq	%rcx, %rcx
+	wrpkru
+	popq	%rdx
+	popq	%rcx
+	popq	%rax
+#endif //CONFIG_PKK
+
 /*
  * Clear BSS (stack is currently empty)
  */
@@ -537,6 +556,16 @@ SYM_FUNC_START_LOCAL_NOALIGN(.Lrelocated)
  * Jump to the decompressed kernel.
  */
 	jmp	*%rax
+
+#ifdef CONFIG_PKK
+adjust_pku:
+	pushq	%rax
+	movq	%cr4, %rax
+	orq	$X86_CR4_PKE, %rax
+	movq	%rax, %cr4
+	popq	%rax
+	ret
+#endif /* CONFIG_PKK */
 SYM_FUNC_END(.Lrelocated)
 
 /*

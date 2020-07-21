@@ -72,6 +72,19 @@ SYM_CODE_START_NOALIGN(startup_64)
 	/* Set up the stack for verify_cpu(), similar to initial_stack below */
 	leaq	(__end_init_task - SIZEOF_PTREGS)(%rip), %rsp
 
+#ifdef CONFIG_PKK
+	pushq	%rax
+	pushq	%rcx
+	pushq	%rdx
+	xorq	%rax, %rax
+	xorq	%rdx, %rdx
+	xorq	%rcx, %rcx
+	wrpkru
+	popq	%rdx
+	popq	%rcx
+	popq	%rax
+#endif /* CONFIG_PKK */
+
 	/* Sanitize CPU configuration */
 	call verify_cpu
 
@@ -107,6 +120,22 @@ SYM_CODE_START(secondary_startup_64)
 	 * after the boot processor executes this code.
 	 */
 
+#ifdef CONFIG_PKK
+	pushq	%rax
+	pushq	%rcx
+	pushq	%rdx
+	movq	%cr4, %rax
+	orq	$X86_CR4_PKE, %rax
+	movq	%rax, %cr4
+	xorq	%rax, %rax
+	xorq	%rdx, %rdx
+	xorq	%rcx, %rcx
+	wrpkru
+	popq	%rdx
+	popq	%rcx
+	popq	%rax
+#endif /* CONFIG_PKK */
+
 	/* Sanitize CPU configuration */
 	call verify_cpu
 
@@ -123,7 +152,11 @@ SYM_CODE_START(secondary_startup_64)
 1:
 
 	/* Enable PAE mode, PGE and LA57 */
+#ifdef CONFIG_PKK
+	movl	$(X86_CR4_PAE | X86_CR4_PGE | X86_CR4_PKE), %ecx
+#else
 	movl	$(X86_CR4_PAE | X86_CR4_PGE), %ecx
+#endif /* CONFIG_PKK */
 #ifdef CONFIG_X86_5LEVEL
 	testl	$1, __pgtable_l5_enabled(%rip)
 	jz	1f
@@ -234,6 +267,20 @@ SYM_CODE_START(secondary_startup_64)
 	 *	REX.W + FF /5 JMP m16:64 Jump far, absolute indirect,
 	 *		address given in m16:64.
 	 */
+
+#ifdef CONFIG_PKK
+	pushq	%rax
+	pushq	%rcx
+	pushq	%rdx
+	xorq	%rax, %rax
+	xorq	%rdx, %rdx
+	xorq	%rcx, %rcx
+	wrpkru
+	popq	%rdx
+	popq	%rcx
+	popq	%rax
+#endif /* CONFIG_PKK */
+
 	pushq	$.Lafter_lret	# put return address on stack for unwinder
 	xorl	%ebp, %ebp	# clear frame pointer
 	movq	initial_code(%rip), %rax
@@ -314,7 +361,7 @@ SYM_CODE_START_LOCAL(early_idt_handler_common)
 #ifdef CONFIG_PKK
 	xorl	%ecx, %ecx
 	ALTERNATIVE "", "rdpkru", X86_FEATURE_OSPKE
-#endif //CONFIG_PKK
+#endif /* CONFIG_PKK */
 	pushq	%rax			/* pt_regs->pkru */
 #ifdef CONFIG_PKK
 	cmpl	$0x55545554, %eax
@@ -329,7 +376,7 @@ SYM_CODE_START_LOCAL(early_idt_handler_common)
 	movq (5*8)(%rsp), %rax
 	movq (6*8)(%rsp), %rcx
 	movq (7*8)(%rsp), %rdx
-#endif //CONFIG_PKK
+#endif /* CONFIG_PKK */
 
 
 	pushq %rbx				/* pt_regs->bx */
