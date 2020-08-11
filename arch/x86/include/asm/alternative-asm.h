@@ -109,6 +109,17 @@
 	.popsection
 .endm
 
+.macro CALL_ISKIOS_SS target:req
+#ifdef CONFIG_ISKIOS_SHADOW_STACK
+	leaq	140f(%rip), %r10
+	call	\target
+140:
+	nop
+#else
+	call	\target
+#endif
+.endm
+
 #endif  /*  __ASSEMBLY__  */
 
 #endif /* _ASM_X86_ALTERNATIVE_ASM_H */

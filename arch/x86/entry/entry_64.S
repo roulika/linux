@@ -172,7 +172,7 @@ SYM_INNER_LABEL(entry_SYSCALL_64_after_hwframe, SYM_L_GLOBAL)
 	/* IRQs are off. */
 	movq	%rax, %rdi
 	movq	%rsp, %rsi
-	call	do_syscall_64		/* returns with IRQs disabled */
+	CALL_ISKIOS_SS	do_syscall_64		/* returns with IRQs disabled */
 
 	TRACE_IRQS_ON			/* return enables interrupts */
 
@@ -319,6 +319,10 @@ SYM_FUNC_START(__switch_to_asm)
 	popq	%rbx
 	popq	%rbp
 
+#ifdef CONFIG_ISKIOS_SHADOW_STACK
+	movq	(%rsp), %r10
+#endif
+
 	jmp	__switch_to
 SYM_FUNC_END(__switch_to_asm)
 
@@ -332,7 +336,7 @@ SYM_FUNC_END(__switch_to_asm)
 SYM_CODE_START(ret_from_fork)
 	UNWIND_HINT_EMPTY
 	movq	%rax, %rdi
-	call	schedule_tail			/* rdi: 'prev' task parameter */
+	CALL_ISKIOS_SS	schedule_tail			/* rdi: 'prev' task parameter */
 
 	testq	%rbx, %rbx			/* from kernel_thread? */
 	jnz	1f				/* kernel threads are uncommon */
@@ -340,7 +344,7 @@ SYM_CODE_START(ret_from_fork)
 2:
 	UNWIND_HINT_REGS
 	movq	%rsp, %rdi
-	call	syscall_return_slowpath	/* returns with IRQs disabled */
+	CALL_ISKIOS_SS	syscall_return_slowpath	/* returns with IRQs disabled */
 	TRACE_IRQS_ON			/* user mode is traced as IRQS on */
 	jmp	swapgs_restore_regs_and_return_to_usermode
 
@@ -603,7 +607,7 @@ SYM_CODE_START_LOCAL(common_interrupt)
 	addq	$-0x80, (%rsp)			/* Adjust vector to [-256, -1] range */
 	call	interrupt_entry
 	UNWIND_HINT_REGS indirect=1
-	call	do_IRQ	/* rdi points to pt_regs */
+	CALL_ISKIOS_SS	do_IRQ	/* rdi points to pt_regs */
 	/* 0(%rsp): old RSP */
 ret_from_intr:
 	DISABLE_INTERRUPTS(CLBR_ANY)
@@ -671,7 +675,7 @@ retint_kernel:
 	jnc	1f
 	cmpl	$0, PER_CPU_VAR(__preempt_count)
 	jnz	1f
-	call	preempt_schedule_irq
+	CALL_ISKIOS_SS	preempt_schedule_irq
 1:
 #endif
 	/*
@@ -801,7 +805,7 @@ SYM_CODE_START(\sym)
 .Lcommon_\sym:
 	call	interrupt_entry
 	UNWIND_HINT_REGS indirect=1
-	call	\do_sym	/* rdi points to pt_regs */
+	CALL_ISKIOS_SS	\do_sym	/* rdi points to pt_regs */
 	jmp	ret_from_intr
 SYM_CODE_END(\sym)
 _ASM_NOKPROBE(\sym)
@@ -914,7 +918,7 @@ apicinterrupt IRQ_WORK_VECTOR			irq_work_interrupt		smp_irq_work_interrupt
 	movq	%r12, %rdx			/* Move CR2 into 3rd argument */
 	.endif
 
-	call	\do_sym
+	CALL_ISKIOS_SS	\do_sym
 
 	.if \shift_ist != -1
 	addq	$\ist_offset, CPU_TSS_IST(\shift_ist)
@@ -1079,7 +1083,7 @@ SYM_FUNC_START(do_softirq_own_stack)
 	pushq	%rbp
 	mov	%rsp, %rbp
 	ENTER_IRQ_STACK regs=0 old_rsp=%r11
-	call	__do_softirq
+	CALL_ISKIOS_SS	__do_softirq
 	LEAVE_IRQ_STACK regs=0
 	leaveq
 	ret
@@ -1361,7 +1365,7 @@ SYM_CODE_START_LOCAL(error_entry)
 	 * as if we faulted immediately after IRET.
 	 */
 	mov	%rsp, %rdi
-	call	fixup_bad_iret
+	CALL_ISKIOS_SS	fixup_bad_iret
 	mov	%rax, %rsp
 	jmp	.Lerror_entry_from_usermode_after_swapgs
 SYM_CODE_END(error_entry)
@@ -1468,7 +1472,7 @@ SYM_CODE_START(nmi)
 
 	movq	%rsp, %rdi
 	movq	$-1, %rsi
-	call	do_nmi
+	CALL_ISKIOS_SS	do_nmi
 
 	/*
 	 * Return back to user mode.  We must *not* do the normal exit
@@ -1681,7 +1685,7 @@ end_repeat_nmi:
 	/* paranoidentry do_nmi, 0; without TRACE_IRQS_OFF */
 	movq	%rsp, %rdi
 	movq	$-1, %rsi
-	call	do_nmi
+	CALL_ISKIOS_SS	do_nmi
 
 	/* Always restore stashed CR3 value (see paranoid_entry) */
 	RESTORE_CR3 scratch_reg=%r15 save_reg=%r14
@@ -1741,5 +1745,5 @@ SYM_CODE_START(rewind_stack_do_exit)
 	leaq	-PTREGS_SIZE(%rax), %rsp
 	UNWIND_HINT_REGS
 
-	call	do_exit
+	CALL_ISKIOS_SS	do_exit
 SYM_CODE_END(rewind_stack_do_exit)

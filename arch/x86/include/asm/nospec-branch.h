@@ -127,7 +127,14 @@
 		__stringify(RETPOLINE_CALL \reg), X86_FEATURE_RETPOLINE,\
 		__stringify(lfence; ANNOTATE_RETPOLINE_SAFE; call *\reg), X86_FEATURE_RETPOLINE_AMD
 #else
+#ifdef CONFIG_ISKIOS_SHADOW_STACK
+	leaq	770f(%rip), %r10
 	call	*\reg
+770:
+	nop
+#else
+	call	*\reg
+#endif
 #endif
 .endm
 
@@ -205,7 +212,11 @@
 # define THUNK_TARGET(addr) [thunk_target] "rm" (addr)
 #endif
 #else /* No retpoline for C / inline asm */
+#ifdef CONFIG_ISKIOS_SHADOW_STACK
+# define CALL_NOSPEC "leaq 0x2(%%rip), %%r10; call *%[thunk_target]; nop\n"
+#else
 # define CALL_NOSPEC "call *%[thunk_target]\n"
+#endif
 # define THUNK_TARGET(addr) [thunk_target] "rm" (addr)
 #endif
 

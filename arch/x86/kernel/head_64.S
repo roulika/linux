@@ -286,6 +286,9 @@ SYM_CODE_START(secondary_startup_64)
 	movq	initial_code(%rip), %rax
 	pushq	$__KERNEL_CS	# set correct cs
 	pushq	%rax		# target address in negative space
+#ifdef CONFIG_ISKIOS_SHADOW_STACK
+	leaq	.Lafter_lret(%rip), %r10
+#endif
 	lretq
 .Lafter_lret:
 SYM_CODE_END(secondary_startup_64)
@@ -390,7 +393,7 @@ SYM_CODE_START_LOCAL(early_idt_handler_common)
 	cmpq $14,%rsi		/* Page fault? */
 	jnz 10f
 	GET_CR2_INTO(%rdi)	/* can clobber %rax if pv */
-	call early_make_pgtable
+	CALL_ISKIOS_SS early_make_pgtable
 	andl %eax,%eax
 	jz 20f			/* All good */
 

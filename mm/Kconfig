@@ -877,4 +877,11 @@ config PKK
 	  vet the privilege level of the code that is attempting to execute the
 	  wrpkru instruction.
 
+config ISKIOS_SHADOW_STACK
+	bool "Enable Support for Shadow Stack"
+	default n
+	depends on PKK
+	help
+	  This feature enables passing return addresses using R10.
+
 endmenu
