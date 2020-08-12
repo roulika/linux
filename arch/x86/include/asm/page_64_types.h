@@ -6,7 +6,12 @@
 #include <asm/kaslr.h>
 #endif
 
+
+#ifdef CONFIG_ISKIOS_SHADOW_STACK
 #define SHADOW_STACK_ORDER 1
+#else
+#define SHADOW_STACK_ORDER 0
+#endif
 
 #ifdef CONFIG_KASAN
 #define KASAN_STACK_ORDER 1
