@@ -188,7 +188,9 @@ enum page_cache_mode {
 #define PAGE_READONLY	     __pg(__PP|   0|_USR|___A|__NX|   0|   0|   0)
 #define PAGE_READONLY_EXEC   __pg(__PP|   0|_USR|___A|   0|   0|   0|   0)
 
+#ifdef CONFIG_ISKIOS_XOM
 #define __PAGE_KERNEL_XOM (_PAGE_PKEY_BIT2 | _PAGE_PKEY_BIT1 | _PAGE_PKEY_BIT0)
+#endif
 
 #define __PAGE_KERNEL		 (__PP|__RW|   0|___A|__NX|___D|   0|___G)
 #define __PAGE_KERNEL_EXEC	 (__PP|__RW|   0|___A|   0|___D|   0|___G)
@@ -226,8 +228,15 @@ enum page_cache_mode {
 #define PAGE_KERNEL_RX		__pgprot_mask(__PAGE_KERNEL_RX         | _ENC)
 #define PAGE_KERNEL_NOCACHE	__pgprot_mask(__PAGE_KERNEL_NOCACHE    | _ENC)
 #define PAGE_KERNEL_LARGE	__pgprot_mask(__PAGE_KERNEL_LARGE      | _ENC)
+
+#ifdef CONFIG_ISKIOS_XOM
 #define PAGE_KERNEL_LARGE_EXEC \
   __pgprot_mask(__PAGE_KERNEL_LARGE_EXEC | _PAGE_ENC | __PAGE_KERNEL_XOM)
+#else
+#define PAGE_KERNEL_LARGE_EXEC \
+  __pgprot_mask(__PAGE_KERNEL_LARGE_EXEC | _PAGE_ENC)
+#endif
+
 #define PAGE_KERNEL_VVAR	__pgprot_mask(__PAGE_KERNEL_VVAR       | _ENC)
 
 #define PAGE_KERNEL_IO		__pgprot_mask(__PAGE_KERNEL_IO)

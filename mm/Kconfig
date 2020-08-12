@@ -877,6 +877,13 @@ config PKK
 	  vet the privilege level of the code that is attempting to execute the
 	  wrpkru instruction.
 
+config ISKIOS_XOM
+	bool "Enable Support for eXecute-Only Memory (XOM)"
+	default n
+	depends on PKK
+	help
+	  This feature marks all kernel text pages as execute-only.
+
 config ISKIOS_SHADOW_STACK
 	bool "Enable Support for Shadow Stack"
 	default n
