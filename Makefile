@@ -1028,7 +1028,9 @@ ifdef CONFIG_STACK_VALIDATION
   has_libelf := $(call try-run,\
 		echo "int main() {}" | $(HOSTCC) -xc -o /dev/null $(HOST_LIBELF_LIBS) -,1,0)
   ifeq ($(has_libelf),1)
-    objtool_target := tools/objtool FORCE
+#    objtool_target := tools/objtool FORCE
+    SKIP_STACK_VALIDATION := 1
+    export SKIP_STACK_VALIDATION
   else
     SKIP_STACK_VALIDATION := 1
     export SKIP_STACK_VALIDATION
