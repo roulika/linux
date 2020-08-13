@@ -131,6 +131,22 @@ For 32-bit we have the following conventions - kernel is built with
 	je 		1f
 	nop
 1:
+#ifdef CONFIG_ISKIOS_SHADOW_STACK
+	// This is to emulate the cost of copying the value of pkru to the shadow
+	// stack
+
+	// TODO: copy pt_regs (or just pkru) to shadow stack
+	// ...copy here...
+
+	// disable access to shadow stack
+	xorl	%ecx, %ecx
+	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+	movq 	%cs, %rcx
+	testb 	$3, %cl
+	je 		2f
+	nop
+#endif //CONFIG_ISKIOS_SHADOW_STACK
+2:
 	movq	%r11, %rax
 	movq (6*8)(%rsp), %rcx
 	movq (7*8)(%rsp), %rdx
