@@ -399,7 +399,7 @@ SYM_CODE_START_LOCAL(early_idt_handler_common)
 
 10:
 	movq %rsp,%rdi		/* RDI = pt_regs; RSI is already trapnr */
-	call early_fixup_exception
+	CALL_ISKIOS_SS early_fixup_exception
 
 20:
 	decl early_recursion_flag(%rip)
