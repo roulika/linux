@@ -371,10 +371,12 @@ SYM_CODE_START_LOCAL(early_idt_handler_common)
 	je		.Lno_wrpkru
 	movl	$0x55545554, %eax
 	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+#ifdef CONFIG_SAFE_WRPKRU
 	movq 	%cs, %rcx
 	testb 	$3, %cl
 	je		.Lno_wrpkru
 	nop
+#endif
 .Lno_wrpkru:
 	movq (5*8)(%rsp), %rax
 	movq (6*8)(%rsp), %rcx

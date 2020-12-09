@@ -877,6 +877,14 @@ config PKK
 	  vet the privilege level of the code that is attempting to execute the
 	  wrpkru instruction.
 
+config SAFE_WRPKRU
+	bool "Ensure wrpkru instructions are only executed in kernel mode"
+	default y
+	depends on PKK
+	help
+	  This feature adds a safety check after every wrpkru instruction in kernel
+	  to ensure that user-mode code does not bypass the PKK mechanism.
+
 config ISKIOS_XOM
 	bool "Enable Support for eXecute-Only Memory (XOM)"
 	default n

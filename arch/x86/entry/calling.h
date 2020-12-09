@@ -126,10 +126,12 @@ For 32-bit we have the following conventions - kernel is built with
 	je		1f
 	movl	$0x55545554, %eax
 	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+#ifdef CONFIG_SAFE_WRPKRU
 	movq 	%cs, %rcx
 	testb 	$3, %cl
 	je 		1f
 	nop
+#endif
 1:
 #ifdef CONFIG_ISKIOS_SHADOW_STACK
 	// This is to emulate the cost of copying the value of pkru to the shadow
@@ -141,10 +143,12 @@ For 32-bit we have the following conventions - kernel is built with
 	// disable access to shadow stack
 	xorl	%ecx, %ecx
 	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+#ifdef CONFIG_SAFE_WRPKRU
 	movq 	%cs, %rcx
 	testb 	$3, %cl
 	je 		2f
 	nop
+#endif
 #endif //CONFIG_ISKIOS_SHADOW_STACK
 2:
 	movq	%r11, %rax
@@ -203,10 +207,12 @@ For 32-bit we have the following conventions - kernel is built with
 	cmpl	$0x55545554, %eax
 	je 		1f
 	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+#ifdef CONFIG_SAFE_WRPKRU
 	movq 	%cs, %rcx
 	testb 	$3, %cl
 	je 		1f
 	nop
+#endif
 1:
 	popq %rdx
 	popq %rcx

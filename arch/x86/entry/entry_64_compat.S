@@ -103,10 +103,12 @@ SYM_FUNC_START(entry_SYSENTER_compat)
 	je		.Lno_wrpkru1
 	movl	$0x55545554, %eax
 	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+#ifdef CONFIG_SAFE_WRPKRU
 	movq 	%cs, %rcx
 	testb 	$3, %cl
 	je		.Lno_wrpkru1
 	nop
+#endif
 .Lno_wrpkru1:
 	movq	%r11, %rax
 	xorl	%r11d, %r11d
@@ -265,10 +267,12 @@ SYM_INNER_LABEL(entry_SYSCALL_compat_after_hwframe, SYM_L_GLOBAL)
 	je		.Lno_wrpkru2
 	movl	$0x55545554, %eax
 	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+#ifdef CONFIG_SAFE_WRPKRU
 	movq 	%cs, %rcx
 	testb 	$3, %cl
 	je		.Lno_wrpkru2
 	nop
+#endif
 .Lno_wrpkru2:
 	movq	%r11, %rax
 	xorl	%r11d, %r11d
@@ -440,10 +444,12 @@ SYM_CODE_START(entry_INT80_compat)
 	je		.Lno_wrpkru3
 	movl	$0x55545554, %eax
 	ALTERNATIVE "", "wrpkru", X86_FEATURE_OSPKE
+#ifdef CONFIG_SAFE_WRPKRU
 	movq 	%cs, %rcx
 	testb 	$3, %cl
 	je		.Lno_wrpkru3
 	nop
+#endif
 .Lno_wrpkru3:
 	movq	%r11, %rax
 	xorl	%r11d, %r11d
